@@ -7,7 +7,7 @@
   <thead>
     <tr>
       <th>Status</th>
-      <th>Certname</th>
+      <th>Name</th>
       <th>Catalog</th>
       <th>Report</th>
       <th>&nbsp;</th>
@@ -38,7 +38,7 @@
             {% if node.events['successes'] %}<span class="ui small count label green">{{node.events['successes']}}</span>{% else %}<span class="ui small count label">0</span>{% endif%}</span>
           {% endif %}
       </td>
-      <td><a href="{{url_for('node', certname=node.name)}}">{{node.name}}</a></td>
+      <td><a href="{{url_for('node', certname=node.name)}}">{{names[node.name]}}</a></td>
       <td><a rel="utctimestamp" href="{{url_for('catalog_node', certname=node.name)}}">{{node.catalog_timestamp}}</a></td>
       <td>
         {% if node.report_timestamp %}

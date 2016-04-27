@@ -9,8 +9,21 @@ from pypuppetdb.errors import EmptyResponseError
 from flask import abort
 
 
+def a_or_b(a, b):
+    if a:
+        return a
+    else:
+        return b
+
+
 def jsonprint(value):
     return json.dumps(value, indent=2, separators=(',', ': '))
+
+
+def fqdn(node):
+    fact = node.fact('fqdn')
+    if fact:
+        return fact.value
 
 
 def get_or_abort(func, *args, **kwargs):

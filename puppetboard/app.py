@@ -21,7 +21,7 @@ from pypuppetdb import connect
 from puppetboard.forms import QueryForm
 from puppetboard.utils import (
     get_or_abort, yield_or_stop,
-    limit_reports, jsonprint
+    limit_reports, jsonprint, fqdn, a_or_b
     )
 
 
@@ -122,6 +122,10 @@ def index():
         unreported=app.config['UNRESPONSIVE_HOURS'],
         with_status=True)
 
+    fqdns = {}
+    for fact in puppetdb.facts(name='fqdn'):
+        fqdns[fact.node] = fact.value
+
     nodes_overview = []
     stats = {
         'changed': 0,
@@ -131,7 +135,11 @@ def index():
         'noop': 0
         }
 
+    names = {}
+
     for node in nodes:
+        names[node.name] = a_or_b(fqdns[node.name], node.name)
+
         if node.status == 'unreported':
             stats['unreported'] += 1
         elif node.status == 'changed':
@@ -150,6 +158,7 @@ def index():
         'index.html',
         metrics=metrics,
         nodes=nodes_overview,
+        names=names,
         stats=stats
         )
 
@@ -169,15 +178,23 @@ def nodes():
     nodelist = puppetdb.nodes(
         unreported=app.config['UNRESPONSIVE_HOURS'],
         with_status=True)
+
+    fqdns = {}
+    for fact in puppetdb.facts(name='fqdn'):
+        fqdns[fact.node] = fact.value
+
+    names = {}
     nodes = []
     for node in yield_or_stop(nodelist):
+        names[node.name] = a_or_b(fqdns[node.name], node.name)
+
         if status_arg:
             if node.status == status_arg:
                 nodes.append(node)
         else:
             nodes.append(node)
     return Response(stream_with_context(
-        stream_template('nodes.html', nodes=nodes)))
+        stream_template('nodes.html', names=names, nodes=nodes)))
 
 
 @app.route('/inventory')
@@ -255,6 +272,7 @@ def node(certname):
         'node.html',
         node=node,
         facts=yield_or_stop(facts),
+        name=a_or_b(fqdn(node), node.name),
         reports=yield_or_stop(reports),
         reports_count=app.config['REPORTS_COUNT'])
 
@@ -277,7 +295,7 @@ def reports_node(certname):
     return render_template(
         'reports_node.html',
         reports=reports,
-        certname=certname,
+        name=a_or_b(fqdn(puppetdb.node(certname)), certname),
         reports_count=app.config['REPORTS_COUNT'])
 
 
@@ -315,6 +333,7 @@ def report(certname, report_id):
                 report.hash_))
             return render_template(
                 'report.html',
+                name=a_or_b(fqdn(puppetdb.node(certname)), certname),
                 report=report,
                 events=yield_or_stop(events))
     else:
@@ -347,9 +366,19 @@ def fact(fact):
     if fact in graph_facts:
         render_graph = True
     localfacts = [f for f in yield_or_stop(puppetdb.facts(name=fact))]
+
+    fqdns = {}
+    for fact in puppetdb.facts(name='fqdn'):
+        fqdns[fact.node] = fact.value
+
+    node_names = {}
+    for fact in localfacts:
+        node_names[fact.node] = a_or_b(fqdns[fact.node], fact.node)
+
     return Response(stream_with_context(stream_template(
         'fact.html',
-        name=fact,
+        name=fact.name,
+        node_names=node_names,
         render_graph=render_graph,
         facts=localfacts)))
 
@@ -359,9 +388,19 @@ def fact_value(fact, value):
     """On asking for fact/value get all nodes with that fact."""
     facts = get_or_abort(puppetdb.facts, fact, value)
     localfacts = [f for f in yield_or_stop(facts)]
+
+    fqdns = {}
+    for fact in puppetdb.facts(name='fqdn'):
+        fqdns[fact.node] = fact.value
+
+    node_names = {}
+    for fact in localfacts:
+        node_names[fact.node] = a_or_b(fqdns[fact.node], fact.node)
+
     return render_template(
         'fact.html',
-        name=fact,
+        name=fact.name,
+        node_names=node_names,
         value=value,
         facts=localfacts)
 

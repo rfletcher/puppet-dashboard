@@ -65,7 +65,7 @@
         <thead>
           <tr>
             <th class="five wide">Status</th>
-            <th class="five wide">Certname</th>
+            <th class="five wide">Node</th>
             <th class="five wide">Report</th>
             <th class="one wide"></th>
           </tr>
@@ -97,7 +97,7 @@
                 {% endif %}
             </td>
             <td>
-              <a href="{{url_for('node', certname=node.name)}}">{{ node.name }}</a>
+              <a href="{{url_for('node', certname=node.name)}}">{{ names[node.name] }}</a>
             </td>
             <td>
               {% if node.report_timestamp %}
