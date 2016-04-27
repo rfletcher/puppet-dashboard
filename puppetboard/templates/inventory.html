@@ -12,10 +12,9 @@
     </tr>
   </thead>
   <tbody class="searchable">
-    {% for nodename in nodedata %}
+    {% for certname in nodedata %}
     <tr>
- 
-      {% for item in nodedata[nodename] %}
+      {% for item in nodedata[certname] %}
       <td>{{item}}</td>
       {% endfor %}
     </tr>

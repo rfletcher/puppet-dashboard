@@ -4,7 +4,7 @@
 <table class='ui basic table'>
   <thead>
     <tr>
-      <th>Hostname</th>
+      <th>Certname</th>
       <th>Configuration version</th>
       <th>Start time</th>
       <th>End time</th>
@@ -12,7 +12,7 @@
   </thead>
   <tbody>
     <tr>
-      <td><a href="{{url_for('node', node_name=report.node)}}">{{ report.node }}</a></td>
+      <td><a href="{{url_for('node', certname=report.node)}}">{{ report.node }}</a></td>
       <td>
         {{report.version}}
       </td>

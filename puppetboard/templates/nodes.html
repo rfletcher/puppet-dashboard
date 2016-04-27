@@ -7,7 +7,7 @@
   <thead>
     <tr>
       <th>Status</th>
-      <th>Hostname</th>
+      <th>Certname</th>
       <th>Catalog</th>
       <th>Report</th>
       <th>&nbsp;</th>
@@ -27,7 +27,7 @@
           {% elif node.status == 'noop' %}
             blue
           {% endif %}
-          " href="{{url_for('report_latest', node_name=node.name)}}">
+          " href="{{url_for('report_latest', certname=node.name)}}">
             {{node.status}}
           </a>
           {% if node.status=='unreported'%}
@@ -38,18 +38,18 @@
             {% if node.events['successes'] %}<span class="ui small count label green">{{node.events['successes']}}</span>{% else %}<span class="ui small count label">0</span>{% endif%}</span>
           {% endif %}
       </td>
-      <td><a href="{{url_for('node', node_name=node.name)}}">{{node.name}}</a></td>
-      <td><a rel="utctimestamp" href="{{url_for('catalog_node', node_name=node.name)}}">{{node.catalog_timestamp}}</a></td>
+      <td><a href="{{url_for('node', certname=node.name)}}">{{node.name}}</a></td>
+      <td><a rel="utctimestamp" href="{{url_for('catalog_node', certname=node.name)}}">{{node.catalog_timestamp}}</a></td>
       <td>
         {% if node.report_timestamp %}
-        <a href="{{url_for('report_latest', node_name=node.name)}}" rel='utctimestamp'>{{ node.report_timestamp }}</a>
+        <a href="{{url_for('report_latest', certname=node.name)}}" rel='utctimestamp'>{{ node.report_timestamp }}</a>
         {% else %}
           <i class="large ban circle icon"></i>
         {% endif %}
       </td>
       <td>
         {% if node.report_timestamp %}
-        <a title='Reports' href="{{url_for('reports_node', node_name=node.name)}}"><i class='large darkblue book icon'></i></a>
+        <a title='Reports' href="{{url_for('reports_node', certname=node.name)}}"><i class='large darkblue book icon'></i></a>
         <i class='large darkblue trash icon'></i>
         {% endif %}
       </td>

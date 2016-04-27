@@ -242,13 +242,13 @@ def inventory():
         stream_template('inventory.html', nodedata=nodedata, fact_desc=fact_desc)))
 
 
-@app.route('/node/<node_name>')
-def node(node_name):
+@app.route('/node/<certname>')
+def node(certname):
     """Display a dashboard for a node showing as much data as we have on that
     node. This includes facts and reports but not Resources as that is too
     heavy to do within a single request.
     """
-    node = get_or_abort(puppetdb.node, node_name)
+    node = get_or_abort(puppetdb.node, certname)
     facts = node.facts()
     reports = limit_reports(node.reports(), app.config['REPORTS_COUNT'])
     return render_template(
@@ -266,40 +266,40 @@ def reports():
     return render_template('reports.html')
 
 
-@app.route('/reports/<node_name>')
-def reports_node(node_name):
+@app.route('/reports/<certname>')
+def reports_node(certname):
     """Fetches all reports for a node and processes them eventually rendering
     a table displaying those reports."""
     reports = limit_reports(
         yield_or_stop(
-            puppetdb.reports('["=", "certname", "{0}"]'.format(node_name))),
+            puppetdb.reports('["=", "certname", "{0}"]'.format(certname))),
         app.config['REPORTS_COUNT'])
     return render_template(
         'reports_node.html',
         reports=reports,
-        nodename=node_name,
+        certname=certname,
         reports_count=app.config['REPORTS_COUNT'])
 
 
-@app.route('/report/latest/<node_name>')
-def report_latest(node_name):
+@app.route('/report/latest/<certname>')
+def report_latest(certname):
     """Redirect to the latest report of a given node. This is a workaround
     as long as PuppetDB can't filter reports for latest-report? field. This
     feature has been requested: https://tickets.puppetlabs.com/browse/PDB-203
     """
     reports = get_or_abort(puppetdb._query, 'reports',
-                           query='["=","certname","{0}"]'.format(node_name),
+                           query='["=","certname","{0}"]'.format(certname),
                            limit=1)
     if len(reports) > 0:
         report = reports[0]['hash']
         return redirect(
-            url_for('report', node_name=node_name, report_id=report))
+            url_for('report', certname=certname, report_id=report))
     else:
         abort(404)
 
 
-@app.route('/report/<node_name>/<report_id>')
-def report(node_name, report_id):
+@app.route('/report/<certname>/<report_id>')
+def report(certname, report_id):
     """Displays a single report including all the events associated with that
     report and their status.
 
@@ -307,7 +307,7 @@ def report(node_name, report_id):
     configuration_version. This allows for better integration
     into puppet-hipchat.
     """
-    reports = puppetdb.reports('["=", "certname", "{0}"]'.format(node_name))
+    reports = puppetdb.reports('["=", "certname", "{0}"]'.format(certname))
 
     for report in reports:
         if report.hash_ == report_id or report.version == report_id:
@@ -408,11 +408,11 @@ def metric(metric):
         name=name,
         metric=sorted(metric.items()))
 
-@app.route('/catalog/<node_name>')
-def catalog_node(node_name):
+@app.route('/catalog/<certname>')
+def catalog_node(certname):
     """Fetches from PuppetDB the compiled catalog of a given node."""
     if app.config['ENABLE_CATALOG']:
-        catalog = puppetdb.catalog(node=node_name)
+        catalog = puppetdb.catalog(node=certname)
         return render_template('catalog.html', catalog=catalog)
     else:
         log.warn('Access to catalog interface disabled by administrator')
