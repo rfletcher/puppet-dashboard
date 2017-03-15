@@ -138,7 +138,10 @@ def index():
     names = {}
 
     for node in nodes:
-        names[node.name] = a_or_b(fqdns[node.name], node.name)
+        try:
+            names[node.name] = a_or_b(fqdns[node.name], node.name)
+        except KeyError as e:
+            names[node.name] = node.name
 
         if node.status == 'unreported':
             stats['unreported'] += 1
@@ -186,7 +189,10 @@ def nodes():
     names = {}
     nodes = []
     for node in yield_or_stop(nodelist):
-        names[node.name] = a_or_b(fqdns[node.name], node.name)
+        try:
+            names[node.name] = a_or_b(fqdns[node.name], node.name)
+        except KeyError as e:
+            names[node.name] = node.name
 
         if status_arg:
             if node.status == status_arg:
