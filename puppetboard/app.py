@@ -126,6 +126,17 @@ def index():
     for fact in puppetdb.facts(name='fqdn'):
         fqdns[fact.node] = fact.value
 
+
+    if app.config['IGNORE_UNREPORTED']:
+      ignore_unreported       = {}
+      ignore_unreported_key   = app.config['IGNORE_UNREPORTED'].split(':')[0]
+      ignore_unreported_value = app.config['IGNORE_UNREPORTED'].split(':')[1]
+
+      for fact in puppetdb.facts(name=ignore_unreported_key):
+        ignore_unreported[fact.node] = fact.value
+
+      nodes = [x for x in nodes if (x.status != 'unreported' or x.name not in ignore_unreported or ignore_unreported[x.name] != ignore_unreported_value)]
+
     nodes_overview = []
     stats = {
         'changed': 0,
